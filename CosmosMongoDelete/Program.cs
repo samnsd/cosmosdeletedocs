@@ -9,14 +9,18 @@ var config = new ConfigurationBuilder()
     .AddEnvironmentVariables()
     .Build();
 
-if (args.Length < 2 || args[0] != "delete-documents")
+if (args.Length < 2 || (args[0] != "delete-documents" && args[0] != "count-documents"))
 {
-    Console.Error.WriteLine("Usage: CosmosMongoDelete delete-documents <DocType>");
-    Console.Error.WriteLine("  Example: CosmosMongoDelete delete-documents MetadataDefinition");
+    Console.Error.WriteLine("Usage: CosmosMongoDelete <command> <DocType>");
+    Console.Error.WriteLine("  Commands:");
+    Console.Error.WriteLine("    delete-documents <DocType>  Delete all documents of the given DocType");
+    Console.Error.WriteLine("    count-documents <DocType>   Count all documents of the given DocType");
+    Console.Error.WriteLine("  Example: CosmosMongoDelete count-documents MetadataDefinition");
     return 1;
 }
 
 var docType = args[1];
+var command = args[0];
 
 var connectionString = config["CosmosDb:ConnectionString"]
     ?? throw new InvalidOperationException("CosmosDb:ConnectionString is not configured.");
@@ -41,7 +45,14 @@ Console.CancelKeyPress += (_, e) =>
 
 try
 {
-    await service.DeleteByDocTypeAsync(docType, cts.Token);
+    if (command == "count-documents")
+    {
+        await service.CountByDocTypeAsync(docType, cts.Token);
+    }
+    else
+    {
+        await service.DeleteByDocTypeAsync(docType, cts.Token);
+    }
     return 0;
 }
 catch (OperationCanceledException)

@@ -13,6 +13,14 @@ public class BulkDeleteService
         _collection = collection;
     }
 
+    public async Task<long> CountByDocTypeAsync(string docType, CancellationToken cancellationToken = default)
+    {
+        var filter = Builders<CosmosDocument>.Filter.Eq(d => d.DocType, docType);
+        var count = await _collection.CountDocumentsAsync(filter, cancellationToken: cancellationToken);
+        Console.WriteLine($"DocType='{docType}' has {count} document(s) in the collection.");
+        return count;
+    }
+
     public async Task DeleteByDocTypeAsync(string docType, CancellationToken cancellationToken = default)
     {
         var filter = Builders<CosmosDocument>.Filter.Eq(d => d.DocType, docType);
@@ -40,11 +48,11 @@ public class BulkDeleteService
                 break;
 
             batchNumber++;
-            //var idFilter = Builders<CosmosDocument>.Filter.In(d => d.Id, ids.Select(d => d.Id));
-            //var result = await _collection.DeleteManyAsync(idFilter, cancellationToken);
+            var idFilter = Builders<CosmosDocument>.Filter.In(d => d.Id, ids.Select(d => d.Id));
+            var result = await _collection.DeleteManyAsync(idFilter, cancellationToken);
 
-            //totalDeleted += result.DeletedCount;
-            //Console.WriteLine($"  Batch {batchNumber}: deleted {result.DeletedCount} documents (total: {totalDeleted})");
+            totalDeleted += result.DeletedCount;
+            Console.WriteLine($"  Batch {batchNumber}: deleted {result.DeletedCount} documents (total: {totalDeleted})");
         }
 
         Console.WriteLine($"Done. Total deleted: {totalDeleted} documents with DocType='{docType}'.");
