@@ -1,0 +1,10 @@
+## .NET build output
+bin/
+obj/
+
+## Secrets — never commit the real appsettings
+CosmosMongoDelete/appsettings.json
+
+## OS
+.DS_Store
+Thumbs.db
